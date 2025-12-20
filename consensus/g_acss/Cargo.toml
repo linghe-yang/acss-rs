@@ -8,17 +8,17 @@ edition = "2021"
 [dependencies]
 consensus = {package = "consensus", path="../../consensus"}
 
-types = { package = "types", git="https://github.com/akhilsb/Secure-Distributed-Computing-Protocols.git"}
-config = { package = "config", git="https://github.com/akhilsb/Secure-Distributed-Computing-Protocols.git"}
+types = { package = "types", git="https://github.com/linghe-yang/Secure-Distributed-Computing-Protocols.git"}
+config = { package = "config", git="https://github.com/linghe-yang/Secure-Distributed-Computing-Protocols.git"}
 # ctrbc = { package = "ctrbc", git="https://github.com/SohamJog/reliable-broadcast-protocols.git"}
-ctrbc = { package = "ctrbc", git="https://github.com/akhilsb/Secure-Distributed-Computing-Protocols.git"}
-ccbrb = { package = "ccbrb", git="https://github.com/akhilsb/Secure-Distributed-Computing-Protocols.git"}
+ctrbc = { package = "ctrbc", git="https://github.com/linghe-yang/Secure-Distributed-Computing-Protocols.git"}
+ccbrb = { package = "ccbrb", git="https://github.com/linghe-yang/Secure-Distributed-Computing-Protocols.git"}
 
 
 asks = {package = "asks", path = "../asks"}
 ra = {package = "ra", path= "../ra"}
 
-ha_crypto = { package = "crypto", git="https://github.com/akhilsb/Secure-Distributed-Computing-Protocols.git"}
+ha_crypto = { package = "crypto", git="https://github.com/linghe-yang/Secure-Distributed-Computing-Protocols.git"}
 
 avid = {package = "avid", path = "../avid"}
 
