@@ -45,7 +45,7 @@ impl Context{
             self.broadcast(ready_msg).await;
         }
         else if size >= self.num_nodes - self.num_faults && !ra_context.terminated {
-            log::info!("Received n-f READY messages for RA Instance ID {}, terminating",instance_id);
+            log::debug!("Received n-f READY messages for RA Instance ID {}, terminating",instance_id);
             // Terminate protocol
             ra_context.terminated = true;
             self.terminate(instance_id, value).await;
@@ -58,6 +58,6 @@ impl Context{
 
         let msg = (rep, instance, value);
         let status = self.out_ra_values.send(msg).await;
-        log::info!("Sent result back to original channel {:?}", status);
+        log::debug!("Sent result back to original channel {:?}", status);
     }
 }

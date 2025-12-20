@@ -11,7 +11,7 @@ use super::ACSSABState;
 impl Context{
     pub async fn init_symmetric_key_setup(&mut self){
         if self.symmetric_keys_avid.keys_from_me.is_empty(){
-            log::info!("Initializing symmetric keys and sharing them through ASKS in ACSS instance");
+            log::debug!("Initializing symmetric keys and sharing them through ASKS in ACSS instance");
             // First sample $n$ symmetric keys
             let mut symm_keys = Vec::new();
             for i in 0..self.num_nodes{
@@ -19,7 +19,7 @@ impl Context{
                 symm_keys.push(key.clone());
                 self.symmetric_keys_avid.keys_from_me.insert(i, key.to_bytes_be().to_vec());
             }
-            log::info!("Symmetric keys generated: {:?}", symm_keys);
+            log::debug!("Symmetric keys generated: {:?}", symm_keys);
             // Now share these keys through ASKS
             let _status = self.asks_inp_channel.send((
                 1,
@@ -37,8 +37,8 @@ impl Context{
     }
 
     pub async fn init_symmetric_key_reconstruction(&mut self, party: Replica){
-        log::info!("Received ASKS termination for secrets initiated by party {}", party);
-        log::info!("Reconstructing symmetric keys in ASKS from party {}", party);
+        log::debug!("Received ASKS termination for secrets initiated by party {}", party);
+        log::debug!("Reconstructing symmetric keys in ASKS from party {}", party);
         if !self.symmetric_keys_avid.term_asks_sharing.contains(&party){
             self.symmetric_keys_avid.term_asks_sharing.insert(party);
             // Initiate reconstruction
@@ -59,7 +59,7 @@ impl Context{
     }
 
     pub async fn process_symmetric_key_reconstruction(&mut self, party: Replica, secret: Vec<LargeField>){
-        log::info!("Received reconstructed symmetric keys from party {} {:?}", party, secret);
+        log::debug!("Received reconstructed symmetric keys from party {} {:?}", party, secret);
         if !self.symmetric_keys_avid.keys_to_me.contains_key(&party){
             let secret = secret[0].clone().to_bytes_be();
             self.symmetric_keys_avid.keys_to_me.insert(party, secret.to_vec());
@@ -93,7 +93,7 @@ impl Context{
                                 .duration_since(UNIX_EPOCH)
                                 .unwrap()
                                 .as_millis();
-        log::info!("Starting sharing preparation");
+        log::debug!("Starting sharing preparation");
         // Bivariate polynomials
         let acss_state = self.acss_ab_state.get_mut(&instance_id).unwrap();
 
@@ -230,7 +230,7 @@ impl Context{
             expansion_eval_points.clone()
         );
 
-        log::info!("Finished generating evaluations at time: {}", 
+        log::debug!("Finished generating evaluations at time: {}",
             SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -290,7 +290,7 @@ impl Context{
             }
         }
         
-        log::info!("Finished preparing shares at time: {}", 
+        log::debug!("Finished preparing shares at time: {}",
             SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -343,7 +343,7 @@ impl Context{
 
     pub async fn throttle_avid_instances(&mut self, instance_id: usize)-> bool{
         // Run three at once
-        log::info!("Throttling AVID instances for ACSS instance id {}, starting {} instances at once", instance_id, self.avid_throttling_quant);
+        log::debug!("Throttling AVID instances for ACSS instance id {}, starting {} instances at once", instance_id, self.avid_throttling_quant);
         let acss_state = self.acss_ab_state.get_mut(&instance_id).unwrap();
         if acss_state.avid_instances.is_empty(){
             return true;
@@ -442,7 +442,7 @@ impl Context{
         }
 
         acss_ab_state.shares.insert(sender, accepted_shares);
-        log::info!("All DZK shares from sender {} in instance_id {} verified successfully", sender, instance_id);
+        log::debug!("All DZK shares from sender {} in instance_id {} verified successfully", sender, instance_id);
         // Accumulate all shares from batches
         acss_ab_state.verification_status.insert(sender,true);
         // Start reliable agreement

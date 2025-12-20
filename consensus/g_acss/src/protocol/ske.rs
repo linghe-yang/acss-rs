@@ -16,7 +16,7 @@ impl Context{
         let acss_ab_state = self.acss_ab_state.get_mut(&instance_id).unwrap();
         
         if acss_ab_state.shares.contains_key(&sender_rep){
-            log::info!("Shares already interpolated for sender {} in instance_id {}", sender_rep, instance_id);
+            log::debug!("Shares already interpolated for sender {} in instance_id {}", sender_rep, instance_id);
             return;
         }
         if !acss_ab_state.commitments.contains_key(&sender_rep) ||
@@ -139,7 +139,7 @@ impl Context{
             // Schedule next batch of AVID instances
             let avid_status = self.throttle_avid_instances(instance_id).await;
             if avid_status{
-                log::info!("All AVID instances completed for ACSS instance id {}", instance_id);
+                log::debug!("All AVID instances completed for ACSS instance id {}", instance_id);
             }
         }
         self.verify_shares(sender_rep, instance_id).await;

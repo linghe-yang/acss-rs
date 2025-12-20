@@ -179,8 +179,8 @@ impl Context{
         //     }
         //     eval_vec
         // }).collect();
-        // log::info!("Aggregated polynomial evaluations: {:?}", agg_points);
-        // log::info!("Aggregated blinding polynomial evaluations: {:?}", blinding_poly_points);
+        // log::debug!("Aggregated polynomial evaluations: {:?}", agg_points);
+        // log::debug!("Aggregated blinding polynomial evaluations: {:?}", blinding_poly_points);
         agg_poly_vector
     }
 
@@ -271,7 +271,7 @@ impl Context{
     }
 
     pub async fn init_pubrec_quad(&mut self, instance_id: usize, party: Replica){
-        log::info!("Received request to publicly reconstruct secrets in instance {} with quadratic cost", instance_id);
+        log::debug!("Received request to publicly reconstruct secrets in instance {} with quadratic cost", instance_id);
         if !self.acss_ab_state.contains_key(&instance_id){
             log::error!("No ACSS AB state found for instance {}", instance_id);
             return;
@@ -305,7 +305,7 @@ impl Context{
     }
 
     pub async fn init_pubrec(&mut self, instance_id: usize, party: Replica){
-        log::info!("Received request to publicly reconstruct secrets in instance {}", instance_id);
+        log::debug!("Received request to publicly reconstruct secrets in instance {}", instance_id);
         if !self.acss_ab_state.contains_key(&instance_id){
             log::error!("No ACSS AB state found for instance {}", instance_id);
             return;
@@ -366,7 +366,7 @@ impl Context{
         acss_msg: AcssSKEShares, 
         share_sender: Replica,
     ){
-        log::info!("Received PubRecL1 message for instance {} of party {}, shares received from party {}", instance_id, acss_msg.rep, share_sender);
+        log::debug!("Received PubRecL1 message for instance {} of party {}, shares received from party {}", instance_id, acss_msg.rep, share_sender);
         if !self.acss_ab_state.contains_key(&instance_id){
             let acss_ab_state = ACSSABState::new();
             self.acss_ab_state.insert(instance_id, acss_ab_state);
@@ -375,7 +375,7 @@ impl Context{
         let acss_ab_state = self.acss_ab_state.get_mut(&instance_id).unwrap();
         
         if acss_ab_state.public_reconstruction_l1_status.contains(&acss_msg.rep){
-            log::info!("Public reconstruction l1 already complete for party {} in instance {}", acss_msg.rep, instance_id);
+            log::debug!("Public reconstruction l1 already complete for party {} in instance {}", acss_msg.rep, instance_id);
             return;
         }
         if !acss_ab_state.commitments.contains_key(&acss_msg.rep){
@@ -408,7 +408,7 @@ impl Context{
             return;
         }
 
-        log::info!("Successfully verified commitment in PubRecL1 message for instance {} of party {}, shares received from party {}", instance_id, acss_msg.rep, share_sender);
+        log::debug!("Successfully verified commitment in PubRecL1 message for instance {} of party {}, shares received from party {}", instance_id, acss_msg.rep, share_sender);
 
         let blinding_share = acss_msg.blinding_evaluations.0[0].clone();
         let blinding_nonce_share = acss_msg.blinding_evaluations.1[0].clone();
@@ -434,7 +434,7 @@ impl Context{
             return;
         }
         
-        log::info!("Successfully verified blinding commitment in PubRecL1 message for instance {} of party {}, shares received from party {}", instance_id, acss_msg.rep, share_sender);
+        log::debug!("Successfully verified blinding commitment in PubRecL1 message for instance {} of party {}, shares received from party {}", instance_id, acss_msg.rep, share_sender);
 
         // Verify shares first
         let shares: Vec<LargeField> = acss_msg.evaluations.0.clone().into_iter().map(|el| LargeField::from_bytes_be(el.as_slice()).unwrap()).collect();
@@ -460,7 +460,7 @@ impl Context{
             log::error!("Dzk proof verification failed for instance {} of party {}, shares received from party {}", instance_id, acss_msg.rep, share_sender);
             return;
         }
-        log::info!("Successfully verified dzk proof in PubRecL1 message for instance {} of party {}, shares received from party {}", instance_id, acss_msg.rep, share_sender);
+        log::debug!("Successfully verified dzk proof in PubRecL1 message for instance {} of party {}, shares received from party {}", instance_id, acss_msg.rep, share_sender);
         
         if !acss_ab_state.public_reconstruction_l1_shares.contains_key(&acss_msg.rep){
             acss_ab_state.public_reconstruction_l1_shares.insert(acss_msg.rep, HashMap::default());
@@ -476,7 +476,7 @@ impl Context{
 
         if share_map.len() == self.num_faults + 1{
             // Reconstruct the secrets
-            log::info!("t+1 shares received for share polynomials of party {}", acss_msg.rep);
+            log::debug!("t+1 shares received for share polynomials of party {}", acss_msg.rep);
             let mut eval_points = Vec::new();
             let mut shares_indexed: Vec<Vec<LargeField>> = Vec::new();
             for _ in 0..tot_share_count{
@@ -510,7 +510,7 @@ impl Context{
             }).collect();
 
             acss_ab_state.public_reconstruction_l1_status.insert(acss_msg.rep);
-            log::info!("Successfully interpolated shares for l2 public reconstruction for instance id {} and source party {}", instance_id, acss_msg.rep);
+            log::debug!("Successfully interpolated shares for l2 public reconstruction for instance id {} and source party {}", instance_id, acss_msg.rep);
             // broadcast these shares
             let prot_msg = ProtMsg::PubRecL2(instance_id, acss_msg.rep, l2_shares);
             self.broadcast(prot_msg).await;
@@ -518,7 +518,7 @@ impl Context{
     }
 
     pub async fn process_pub_rec_l2_msg(&mut self, instance_id: usize, source_party: Replica, shares: Vec<LargeFieldSer>, share_sender: Replica){
-        log::info!("Received PubRecL2 message for instance {} of party {}, shares received from party {} with shares.len() {}", instance_id, source_party, share_sender, shares.len());
+        log::debug!("Received PubRecL2 message for instance {} of party {}, shares received from party {} with shares.len() {}", instance_id, source_party, share_sender, shares.len());
         if !self.acss_ab_state.contains_key(&instance_id){
             let acss_ab_state = ACSSABState::new();
             self.acss_ab_state.insert(instance_id, acss_ab_state);
@@ -526,7 +526,7 @@ impl Context{
         let acss_ab_state = self.acss_ab_state.get_mut(&instance_id).unwrap();
 
         if acss_ab_state.public_reconstruction_l2_status.contains(&source_party){
-            log::info!("Public reconstruction l2 already complete for party {} in instance {}", source_party, instance_id);
+            log::debug!("Public reconstruction l2 already complete for party {} in instance {}", source_party, instance_id);
             return;
         }
         if !acss_ab_state.public_reconstruction_l2_shares.contains_key(&source_party){
@@ -541,7 +541,7 @@ impl Context{
 
         // TODO: Add Reed-Solomon Error Correction here
         if share_map.len() == self.num_faults+1{
-            log::info!("L2 Sharing: t+1 shares received for share polynomials of party {} in instance id {}", source_party, instance_id);
+            log::debug!("L2 Sharing: t+1 shares received for share polynomials of party {} in instance id {}", source_party, instance_id);
             let mut evaluation_points = Vec::new();
             let mut shares_indexed: Vec<Vec<LargeField>> = Vec::new();
             for _ in 0..tot_sharings_len{
@@ -567,7 +567,7 @@ impl Context{
                 return Polynomial::new(&coefficients).coefficients;
             }).flatten().collect();
 
-            log::info!("Successfully interpolated secrets after l2 public reconstruction for instance id {} and source party {} with secrets_len: {}", instance_id, source_party, secrets.len());
+            log::debug!("Successfully interpolated secrets after l2 public reconstruction for instance id {} and source party {} with secrets_len: {}", instance_id, source_party, secrets.len());
 
             acss_ab_state.public_reconstruction_l2_status.insert(source_party);
             let _status = self.out_pub_rec_out.send((instance_id, source_party, secrets)).await;

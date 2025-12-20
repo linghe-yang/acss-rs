@@ -12,16 +12,16 @@ impl Context{
         let acss_ab_state = self.acss_ab_state.get_mut(&instance_id).unwrap();
         
         if !acss_ab_state.shares.contains_key(&sender_rep){
-            log::info!("No shares found for sender {} in instance_id {}", sender_rep, instance_id);
+            log::debug!("No shares found for sender {} in instance_id {}", sender_rep, instance_id);
             return;
         }
         if !acss_ab_state.shares.get(&sender_rep).unwrap().evaluations.0.is_empty(){
-            log::info!("Shares already generated for sender {} in instance_id {}", sender_rep, instance_id);
+            log::debug!("Shares already generated for sender {} in instance_id {}", sender_rep, instance_id);
             return;
         }
         if !acss_ab_state.commitments.contains_key(&sender_rep) ||
             !self.symmetric_keys_avid.keys_to_me.contains_key(&sender_rep) {
-            log::info!("No commitments or keys found for sender {} in instance_id {}", sender_rep, instance_id);
+            log::debug!("No commitments or keys found for sender {} in instance_id {}", sender_rep, instance_id);
             return;
         }
             
@@ -62,7 +62,7 @@ impl Context{
         let shares : AcssSKEShares = bincode::deserialize(dec_shares.as_slice()).unwrap();
         // Decrypt shares here
         // Assuming decrypt function is defined elsewhere
-        log::info!("Decrypted shares for sender {} in instance_id {}", sender_rep, instance_id);
+        log::debug!("Decrypted shares for sender {} in instance_id {}", sender_rep, instance_id);
         acss_ab_state.shares.insert(sender_rep, shares);
         if self.myid < self.num_faults{
             self.interpolate_shares(sender_rep, instance_id).await;

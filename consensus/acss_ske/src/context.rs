@@ -133,7 +133,7 @@ impl Context {
             consensus_addrs.insert(*replica, SocketAddr::from(address.clone()));
         }
 
-        log::info!("Consensus addresses: {:?}", consensus_addrs);
+        log::debug!("Consensus addresses: {:?}", consensus_addrs);
         let my_port = consensus_addrs.get(&config.id).unwrap();
         let my_address = to_socket_address("0.0.0.0", my_port.port());
         // let mut syncer_map: FnvHashMap<Replica, SocketAddr> = FnvHashMap::default();
@@ -348,14 +348,14 @@ impl Context {
                 },
                 exit_val = &mut self.exit_rx => {
                     exit_val.map_err(anyhow::Error::new)?;
-                    log::info!("Termination signal received by the server. Exiting.");
+                    log::debug!("Termination signal received by the server. Exiting.");
                     break
                 },
                 acss_msg = self.inp_acss.recv() =>{
                     let (id,secrets) = acss_msg.ok_or_else(||
                         anyhow!("Networking layer has closed")
                     )?;
-                    log::info!("Received request to start ACSS with identifiable abort for {} secrets at time: {:?}",secrets.len() , SystemTime::now()
+                    log::debug!("Received request to start ACSS with identifiable abort for {} secrets at time: {:?}",secrets.len() , SystemTime::now()
                                 .duration_since(UNIX_EPOCH)
                                 .unwrap()
                                 .as_millis());
@@ -375,7 +375,7 @@ impl Context {
                     }
                     // if sharing {
                     //     let secrets = secrets.unwrap();
-                    //     log::info!("Received request to start AVSS for {} secrets at time: {:?}",secrets.len() , SystemTime::now()
+                    //     log::debug!("Received request to start AVSS for {} secrets at time: {:?}",secrets.len() , SystemTime::now()
                     //             .duration_since(UNIX_EPOCH)
                     //             .unwrap()
                     //             .as_millis());
@@ -383,7 +383,7 @@ impl Context {
                     // }
                     // else{
                     //     let recon_request = recon_request.unwrap();
-                    //     log::info!("Received request to reconstruct AVSS for secrets shared by party {} and shares sent by {}",recon_request.0, recon_request.1);
+                    //     log::debug!("Received request to reconstruct AVSS for secrets shared by party {} and shares sent by {}",recon_request.0, recon_request.1);
                     //     self.share_validity_oracle(recon_request.0, recon_request.1, recon_request.2).await;
                     // }
                 },
@@ -392,11 +392,11 @@ impl Context {
                         anyhow!("Networking layer has closed")
                     )?;
                     if asks_msg.2.is_none() {
-                        log::info!("Got ASKS termination event from party {:?}", asks_msg.clone());
+                        log::debug!("Got ASKS termination event from party {:?}", asks_msg.clone());
                         self.init_symmetric_key_reconstruction(asks_msg.1).await;
                     }
                     else{
-                        log::info!("Got ASKS termination reconstruction event from party {:?}", asks_msg.clone());
+                        log::debug!("Got ASKS termination reconstruction event from party {:?}", asks_msg.clone());
                         self.process_symmetric_key_reconstruction(asks_msg.1, asks_msg.2.unwrap()).await;
                     }
                 },
@@ -404,7 +404,7 @@ impl Context {
                     let ctrbc_msg = ctrbc_msg.ok_or_else(||
                         anyhow!("Networking layer has closed")
                     )?;
-                    log::info!("Received termination event from CTRBC channel from party {} at time: {:?}", ctrbc_msg.1, SystemTime::now()
+                    log::debug!("Received termination event from CTRBC channel from party {} at time: {:?}", ctrbc_msg.1, SystemTime::now()
                                 .duration_since(UNIX_EPOCH)
                                 .unwrap()
                                 .as_millis());
@@ -419,7 +419,7 @@ impl Context {
                         log::error!("Received None from AVID for sender {}", avid_msg.0);
                         continue;
                     }
-                    log::info!("Received termination event from AVID channel from party {} at time: {:?}", avid_msg.0, SystemTime::now()
+                    log::debug!("Received termination event from AVID channel from party {} at time: {:?}", avid_msg.0, SystemTime::now()
                                 .duration_since(UNIX_EPOCH)
                                 .unwrap()
                                 .as_millis());
@@ -430,7 +430,7 @@ impl Context {
                     let ra_msg = ra_msg.ok_or_else(||
                         anyhow!("Networking layer has closed")
                     )?;
-                    log::info!("Received termination event from RA channel from party {} messages at time: {:?}", ra_msg.0, SystemTime::now()
+                    log::debug!("Received termination event from RA channel from party {} messages at time: {:?}", ra_msg.0, SystemTime::now()
                                 .duration_since(UNIX_EPOCH)
                                 .unwrap()
                                 .as_millis());
@@ -440,14 +440,14 @@ impl Context {
                 //     let sync_msg = sync_msg.ok_or_else(||
                 //         anyhow!("Networking layer has closed")
                 //     )?;
-                //     log::info!("Received sync message from party {} at time: {:?}", sync_msg.sender, SystemTime::now()
+                //     log::debug!("Received sync message from party {} at time: {:?}", sync_msg.sender, SystemTime::now()
                 //                 .duration_since(UNIX_EPOCH)
                 //                 .unwrap()
                 //                 .as_millis());
                 //     match sync_msg.state {
                 //         SyncState::START =>{
                 //             // Code used for internal purposes
-                //             log::info!("Consensus Start time: {:?}", SystemTime::now()
+                //             log::debug!("Consensus Start time: {:?}", SystemTime::now()
                 //                 .duration_since(UNIX_EPOCH)
                 //                 .unwrap()
                 //                 .as_millis());
@@ -465,11 +465,11 @@ impl Context {
                 //         },
                 //         SyncState::STOP =>{
                 //             // Code used for internal purposes
-                //             log::info!("Consensus Stop time: {:?}", SystemTime::now()
+                //             log::debug!("Consensus Stop time: {:?}", SystemTime::now()
                 //                 .duration_since(UNIX_EPOCH)
                 //                 .unwrap()
                 //                 .as_millis());
-                //             log::info!("Termination signal received by the server. Exiting.");
+                //             log::debug!("Termination signal received by the server. Exiting.");
                 //             break
                 //         },
                 //         _=>{}

@@ -5,7 +5,7 @@ use crate::{Context, protocol::ACSSABState};
 
 impl Context{
     pub async fn handle_ra_termination(&mut self, instance_id: usize, sender: usize, value: usize){
-        log::info!("Received RA termination message from sender {} with value {}",sender, value);
+        log::debug!("Received RA termination message from sender {} with value {}",sender, value);
         if !self.acss_ab_state.contains_key(&instance_id) {
             let acss_state = ACSSABState::new();
             self.acss_ab_state.insert(instance_id, acss_state);
@@ -29,7 +29,7 @@ impl Context{
         && acss_state.verification_status.contains_key(&sender){
             if acss_state.verification_status.get(&sender).unwrap().clone(){
                 // Send shares back to parent process
-                log::info!("Sending shares back to syncer for sender {} for instance id {}",sender, instance_id);
+                log::debug!("Sending shares back to syncer for sender {} for instance id {}",sender, instance_id);
                 // if self.avss_inst_id == instance_id{
                 //     acss_state.acss_status.insert(sender);
                 //     let shares = acss_state.shares.get(&sender).unwrap().clone();

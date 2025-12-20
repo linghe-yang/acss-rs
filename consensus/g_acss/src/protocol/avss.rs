@@ -8,7 +8,7 @@ use crate::Context;
 impl Context{
     pub async fn init_avss(&mut self, secrets: Vec<LargeFieldSer>){
         // Use the avss instance id for this
-        log::info!("Initializing AVSS with instance id {}", self.acss_id+1);
+        log::debug!("Initializing AVSS with instance id {}", self.acss_id+1);
 
         let secrets_deser: Vec<LargeField> = secrets.into_iter().map(|x| LargeField::from_bytes_be(&x).unwrap()).collect::<Vec<LargeField>>();
         self.init_acss_ab(secrets_deser, self.avss_inst_id).await;
@@ -17,7 +17,7 @@ impl Context{
     // pub async fn share_validity_oracle(&mut self, origin: Replica, share_sender: Replica, share: AvssShare){
     //     // Use the avss instance id for this
     //     let _orig_share = share.clone();
-    //     log::info!("Request received to validate shares from sender {} for AVSS from origin {}", share_sender, origin);
+    //     log::debug!("Request received to validate shares from sender {} for AVSS from origin {}", share_sender, origin);
     //     if !self.acss_ab_state.contains_key(&self.avss_inst_id){
     //         log::error!("AVSS instance not found");
     //         return;
@@ -66,7 +66,7 @@ impl Context{
     //     // }
     //     // else{
     //     //     // send share back through the channel
-    //     //     log::info!("Successfully validated AVSS share, sending output back to channel");
+    //     //     log::debug!("Successfully validated AVSS share, sending output back to channel");
     //     //     let _status = self.out_avss.send((false, None, Some((origin, share_sender, orig_share)))).await;
     //     // }
     // }

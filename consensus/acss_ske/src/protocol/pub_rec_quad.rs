@@ -12,7 +12,7 @@ use crate::{Context, AcssSKEShares, protocol::ACSSABState};
 
 impl Context{
     pub async fn process_pub_rec_quad_msg(&mut self, instance_id: usize, acss_msg: AcssSKEShares, share_sender: Replica){
-        log::info!("Received PubRecL1 message for instance {} of party {}, shares received from party {}", instance_id, acss_msg.rep, share_sender);
+        log::debug!("Received PubRecL1 message for instance {} of party {}, shares received from party {}", instance_id, acss_msg.rep, share_sender);
         if !self.acss_ab_state.contains_key(&instance_id){
             let acss_ab_state = ACSSABState::new();
             self.acss_ab_state.insert(instance_id, acss_ab_state);
@@ -21,7 +21,7 @@ impl Context{
         let acss_ab_state = self.acss_ab_state.get_mut(&instance_id).unwrap();
         
         if acss_ab_state.public_reconstruction_quad_status.contains(&acss_msg.rep){
-            log::info!("Public reconstruction l1 already complete for party {} in instance {}", acss_msg.rep, instance_id);
+            log::debug!("Public reconstruction l1 already complete for party {} in instance {}", acss_msg.rep, instance_id);
             return;
         }
         if !acss_ab_state.commitments.contains_key(&acss_msg.rep){
@@ -71,7 +71,7 @@ impl Context{
             return;
         }
 
-        log::info!("Successfully verified commitments of shares sent by sender {} in instance_id {}", sender, instance_id);
+        log::debug!("Successfully verified commitments of shares sent by sender {} in instance_id {}", sender, instance_id);
         // Blinding share verification next
         let blinding_shares: Vec<LargeField> = shares_full.blinding_evaluations.0.into_iter().map(|el| 
             LargeField::from_bytes_be(el.as_slice()).unwrap()
@@ -97,7 +97,7 @@ impl Context{
             return;
         }
 
-        log::info!("Successfully verified blinding commitments of shares sent by sender {} in instance_id {}", sender, instance_id);
+        log::debug!("Successfully verified blinding commitments of shares sent by sender {} in instance_id {}", sender, instance_id);
         // Finally, verify DZK proofs
         let grouped_points = Self::group_points_for_public_reconstruction(
             shares.clone(), 
@@ -131,7 +131,7 @@ impl Context{
             return;
         }
 
-        log::info!("Successfully verified DZK proofs of shares sent by sender {} for ACSS of instance {} in instance_id {}", share_sender, sender, instance_id);
+        log::debug!("Successfully verified DZK proofs of shares sent by sender {} for ACSS of instance {} in instance_id {}", share_sender, sender, instance_id);
 
         if !acss_ab_state.public_reconstruction_quad_shares.contains_key(&sender){
             acss_ab_state.public_reconstruction_quad_shares.insert(sender, HashMap::default());
@@ -145,7 +145,7 @@ impl Context{
         if quad_pub_rec_map.len() == self.num_faults+1{
             // Reconstruct secrets
             // Reconstruct the secrets
-            log::info!("t+1 shares received for share polynomials of party {}", sender);
+            log::debug!("t+1 shares received for share polynomials of party {}", sender);
             let mut eval_points = Vec::new();
             let mut shares_indexed: Vec<Vec<LargeField>> = Vec::new();
             for _ in 0..tot_share_count{
@@ -179,7 +179,7 @@ impl Context{
             }).collect();
 
             acss_ab_state.public_reconstruction_l1_status.insert(sender);
-            log::info!("Successfully interpolated shares for l2 public reconstruction for instance id {} and source party {}", instance_id, sender);
+            log::debug!("Successfully interpolated shares for l2 public reconstruction for instance id {} and source party {}", instance_id, sender);
             let _status = self.out_pub_rec_out.send((instance_id, sender, secrets)).await;
         }
     }

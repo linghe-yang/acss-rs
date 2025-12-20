@@ -2,7 +2,7 @@ use crate::{protocol::ACSSABState, CommDZKMsg, Context};
 
 impl Context{
     pub async fn handle_ctrbc_termination(&mut self, _inst_id: usize, sender_rep: usize, content: Vec<u8>){
-        log::info!("Received CTRBC termination message from sender {}",sender_rep);
+        log::debug!("Received CTRBC termination message from sender {}",sender_rep);
 
         // Deserialize message
         let commitment_msg: CommDZKMsg = bincode::deserialize(content.as_slice()).unwrap();
@@ -21,7 +21,7 @@ impl Context{
         acss_state.commitments.insert(sender_rep, commitment_msg);
 
         acss_state.commitment_root_fe.insert(sender_rep, root_commitment);
-        log::info!("Deserialization successful for sender {} for instance ID {}",sender_rep,instance_id);
+        log::debug!("Deserialization successful for sender {} for instance ID {}",sender_rep,instance_id);
         self.interpolate_shares(sender_rep, instance_id).await;
         self.verify_shares(sender_rep,instance_id).await;
     }

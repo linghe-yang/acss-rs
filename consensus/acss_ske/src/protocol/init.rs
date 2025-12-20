@@ -12,7 +12,7 @@ use super::ACSSABState;
 impl Context{
     pub async fn init_symmetric_key_setup(&mut self){
         if self.symmetric_keys_avid.keys_from_me.is_empty(){
-            log::info!("Initializing symmetric keys and sharing them through ASKS in ACSS instance");
+            log::debug!("Initializing symmetric keys and sharing them through ASKS in ACSS instance");
             // First sample $n$ symmetric keys
             let mut symm_keys = Vec::new();
             for i in 0..self.num_nodes{
@@ -20,7 +20,7 @@ impl Context{
                 symm_keys.push(key.clone());
                 self.symmetric_keys_avid.keys_from_me.insert(i, key.to_bytes_be().to_vec());
             }
-            log::info!("Symmetric keys generated: {:?}", symm_keys);
+            log::debug!("Symmetric keys generated: {:?}", symm_keys);
             // Now share these keys through ASKS
             let _status = self.asks_inp_channel.send((
                 1,
@@ -38,8 +38,8 @@ impl Context{
     }
 
     pub async fn init_symmetric_key_reconstruction(&mut self, party: Replica){
-        log::info!("Received ASKS termination for secrets initiated by party {}", party);
-        log::info!("Reconstructing symmetric keys in ASKS from party {}", party);
+        log::debug!("Received ASKS termination for secrets initiated by party {}", party);
+        log::debug!("Reconstructing symmetric keys in ASKS from party {}", party);
         if !self.symmetric_keys_avid.term_asks_sharing.contains(&party){
             self.symmetric_keys_avid.term_asks_sharing.insert(party);
             // Initiate reconstruction
@@ -60,7 +60,7 @@ impl Context{
     }
 
     pub async fn process_symmetric_key_reconstruction(&mut self, party: Replica, secret: Vec<LargeField>){
-        log::info!("Received reconstructed symmetric keys from party {} {:?}", party, secret);
+        log::debug!("Received reconstructed symmetric keys from party {} {:?}", party, secret);
         if !self.symmetric_keys_avid.keys_to_me.contains_key(&party){
             let secret = secret[0].clone().to_bytes_be();
             self.symmetric_keys_avid.keys_to_me.insert(party, secret.to_vec());
@@ -103,7 +103,7 @@ impl Context{
                                 .unwrap()
                                 .as_millis();
         
-        log::info!("Starting sharing preparation");
+        log::debug!("Starting sharing preparation");
         let tot_sharings = secrets.len();
         let mut handles = Vec::new();
         let mut _indices;
@@ -259,7 +259,7 @@ impl Context{
             nonce_blinding_poly_evaluations = nonce_blinding_evaluations_vec;
         }
         
-        log::info!("Finished generating evaluations at time: {}", 
+        log::debug!("Finished generating evaluations at time: {}",
             SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -274,7 +274,7 @@ impl Context{
             self.num_faults+1,
         );
 
-        log::info!("Starting commitment generation at time: {}", 
+        log::debug!("Starting commitment generation at time: {}",
             SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -311,7 +311,7 @@ impl Context{
             return LargeField::from_bytes_be(root_combined.as_slice()).unwrap();
         }).collect();
 
-        log::info!("Finished commitment generation at time: {}", 
+        log::debug!("Finished commitment generation at time: {}",
             SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -330,7 +330,7 @@ impl Context{
             root_comm_fe
         );
 
-        log::info!("Finished generating DZK proofs at time: {}", 
+        log::debug!("Finished generating DZK proofs at time: {}",
             SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -387,7 +387,7 @@ impl Context{
             blinding_merkle_proofs_party_wise.push(party_blinding_merkle_proofs);
         }
 
-        log::info!("Finished preparing shares at time: {}", 
+        log::debug!("Finished preparing shares at time: {}",
             SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -497,7 +497,7 @@ impl Context{
             return;
         }
 
-        log::info!("Successfully verified commitments of shares sent by sender {} in instance_id {}", sender, instance_id);
+        log::debug!("Successfully verified commitments of shares sent by sender {} in instance_id {}", sender, instance_id);
         // Blinding share verification next
         let blinding_shares: Vec<LargeField> = shares_full.blinding_evaluations.0.into_iter().map(|el| 
             LargeField::from_bytes_be(el.as_slice()).unwrap()
@@ -523,7 +523,7 @@ impl Context{
             return;
         }
 
-        log::info!("Successfully verified blinding commitments of shares sent by sender {} in instance_id {}", sender, instance_id);
+        log::debug!("Successfully verified blinding commitments of shares sent by sender {} in instance_id {}", sender, instance_id);
         // Finally, verify DZK proofs
         let grouped_points = Self::group_points_for_public_reconstruction(
             shares, 
@@ -557,7 +557,7 @@ impl Context{
             return;
         }
         
-        log::info!("Share from {} verified", sender);
+        log::debug!("Share from {} verified", sender);
         acss_ab_state.verification_status.insert(sender,true);
         // Start reliable agreement
         let _status = self.inp_ra_channel.send((sender,1,instance_id)).await;
