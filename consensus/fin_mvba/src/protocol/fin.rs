@@ -277,12 +277,12 @@ impl Context{
         if mvba_round_state.l3_approved_witnesses.len() >= self.num_nodes - self.num_faults && !mvba_round_state.coin_broadcasted{
             // // Create and broadcast coin message
             if !self.coin_shares.contains_key(&instance_id){
-                log::error!("Error in coin tossing: Coin shares not found for instance {}", instance_id);
+                log::debug!("Error in coin tossing: Coin shares not found for instance {}", instance_id);
                 return;
             }
             let instance_coin_shares = self.coin_shares.get_mut(&instance_id).unwrap();
             if instance_coin_shares.is_empty(){
-                log::error!("Error in coin tossing: Coin shares are empty for instance {}", instance_id);
+                log::debug!("Error in coin tossing: Coin shares are empty for instance {}", instance_id);
                 return;
             }
             log::debug!("Broadcasting coin for instance {} and round {}", instance_id, round);
@@ -358,13 +358,13 @@ impl Context{
 
             let mut coin_shares_ba = Vec::new();
             if !self.coin_shares.contains_key(&instance_id){
-                log::error!("Error in coin tossing: Coin shares not found for instance {}", instance_id);
+                log::debug!("Error in coin tossing: Coin shares not found for instance {}", instance_id);
                 return;
             }
             let coin_shares = self.coin_shares.get_mut(&instance_id).unwrap();
             for _ in 0..5{
                 if coin_shares.len() == 0{
-                    log::error!("Error in coin tossing: Not enough coins left for instance {}", instance_id);
+                    log::debug!("Error in coin tossing: Not enough coins left for instance {}", instance_id);
                     return;
                 }
                 coin_shares_ba.push(coin_shares.pop_front().unwrap());
