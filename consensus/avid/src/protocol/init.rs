@@ -1,5 +1,5 @@
 use std::collections::{HashMap, HashSet};
-
+use bytes::Bytes;
 use consensus::get_shards;
 use crypto::{
     aes_hash::{MerkleTree, HashState},
@@ -9,7 +9,7 @@ use types::{WrapperMsg, Replica};
 
 use crate::{Context, msg::{AVIDMsg, AVIDShard}, AVIDState};
 use crate::{ProtMsg};
-use network::{plaintcp::CancelHandler, Acknowledgement};
+use network::{plaintcp::CancelHandler, Acknowledgement, Message};
 
 impl Context {
     // Dealer sending message to everybody
@@ -72,6 +72,7 @@ impl Context {
             
             let protocol_msg = ProtMsg::Init(avid_msg, instance_id);
             let wrapper_msg = WrapperMsg::new(protocol_msg.clone(), self.myid, &sec_key.as_slice());
+            log::info!("Network sending bytes: {:?}", Bytes::from(wrapper_msg.to_bytes()).len());
             let cancel_handler: CancelHandler<Acknowledgement> = self.net_send.send(replica, wrapper_msg).await;
             self.add_cancel_handler(cancel_handler);
         }
@@ -107,6 +108,7 @@ impl Context {
             let protocol_msg = ProtMsg::Echo(index_msg, instance_id);
             let sec_key = self.sec_key_map.get(&recipient).unwrap().clone();
             let wrapper_msg = WrapperMsg::new(protocol_msg.clone(), self.myid, &sec_key.as_slice());
+            log::info!("Network sending bytes: {:?}", Bytes::from(wrapper_msg.to_bytes()).len());
             let cancel_handler: CancelHandler<Acknowledgement> = self.net_send.send(recipient, wrapper_msg).await;
             self.add_cancel_handler(cancel_handler);
         }

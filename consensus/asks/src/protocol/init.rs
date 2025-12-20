@@ -1,7 +1,8 @@
+use bytes::Bytes;
 use consensus::{CTRBCMsg, get_shards};
 use ha_crypto::{LargeField, hash::Hash, encrypt, decrypt, aes_hash::{MerkleTree, Proof}, rand_field_element};
 
-use network::{plaintcp::CancelHandler, Acknowledgement};
+use network::{plaintcp::CancelHandler, Acknowledgement, Message};
 use types::{WrapperMsg, Replica};
 
 use crate::{context::Context, msg::{WSSMsg, WSSMsgSer, ProtMsg}};
@@ -86,6 +87,7 @@ impl Context{
 
             let prot_msg_init = ProtMsg::Init( encrypted_share, instance_id);
             let wrapper_msg = WrapperMsg::new(prot_msg_init, self.myid, &secret_key);
+            log::info!("Network sending bytes: {:?}", Bytes::from(wrapper_msg.to_bytes()).len());
             let cancel_handler = self.net_send.send(rep, wrapper_msg).await;
             self.add_cancel_handler(cancel_handler);
         }
@@ -145,7 +147,7 @@ impl Context{
 
             let echo = ProtMsg::Echo(rbc_msg, deser_msg.reconstruct_to_all, instance_id);
             let wrapper_msg = WrapperMsg::new(echo,self.myid, secret_key_party.as_slice());
-
+            log::info!("Network sending bytes: {:?}", Bytes::from(wrapper_msg.to_bytes()).len());
             let cancel_handler: CancelHandler<Acknowledgement> = self.net_send.send(rep, wrapper_msg).await;
             self.add_cancel_handler(cancel_handler);
         }

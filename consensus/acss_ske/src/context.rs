@@ -5,15 +5,13 @@ use std::{
 };
 
 use anyhow::{anyhow, Result};
+use bytes::Bytes;
 use config::Node;
 
 use fnv::FnvHashMap;
 use ha_crypto::aes_hash::HashState;
 use lambdaworks_math::{ fft::cpu::roots_of_unity::get_powers_of_primitive_root, field::traits::RootsConfig};
-use network::{
-    plaintcp::{CancelHandler, TcpReceiver, TcpReliableSender},
-    Acknowledgement,
-};
+use network::{plaintcp::{CancelHandler, TcpReceiver, TcpReliableSender}, Acknowledgement, Message};
 use consensus::{LargeField, LargeFieldSSS, FoldingDZKContext};
 
 use tokio::{sync::{
@@ -318,13 +316,24 @@ impl Context {
         Ok((exit_tx, vector_statuses))
     }
 
+    // pub async fn broadcast(&mut self, protmsg: ProtMsg) {
+    //     let sec_key_map = self.sec_key_map.clone();
+    //     for (replica, sec_key) in sec_key_map.into_iter() {
+    //         let wrapper_msg = WrapperMsg::new(protmsg.clone(), self.myid, &sec_key.as_slice());
+    //         let cancel_handler: CancelHandler<Acknowledgement> = self.net_send.send(replica, wrapper_msg).await;
+    //         self.add_cancel_handler(cancel_handler);
+    //     }
+    // }
     pub async fn broadcast(&mut self, protmsg: ProtMsg) {
+        let mut total_bytes = 0;
         let sec_key_map = self.sec_key_map.clone();
         for (replica, sec_key) in sec_key_map.into_iter() {
             let wrapper_msg = WrapperMsg::new(protmsg.clone(), self.myid, &sec_key.as_slice());
+            total_bytes += Bytes::from(wrapper_msg.to_bytes()).len();
             let cancel_handler: CancelHandler<Acknowledgement> = self.net_send.send(replica, wrapper_msg).await;
             self.add_cancel_handler(cancel_handler);
         }
+        log::info!("Network sending bytes: {:?}", total_bytes);
     }
 
     pub fn add_cancel_handler(&mut self, canc: CancelHandler<Acknowledgement>) {

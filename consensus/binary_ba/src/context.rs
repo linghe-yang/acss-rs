@@ -2,14 +2,11 @@ use std::{
     collections::{HashMap, HashSet, VecDeque},
     net::{SocketAddr, SocketAddrV4},
 };
-
+use bytes::Bytes;
 use config::Node;
 
 use fnv::FnvHashMap;
-use network::{
-    plaintcp::{CancelHandler, TcpReceiver, TcpReliableSender},
-    Acknowledgement,
-};
+use network::{plaintcp::{CancelHandler, TcpReceiver, TcpReliableSender}, Acknowledgement, Message};
 use tokio::sync::{
     mpsc::{unbounded_channel, UnboundedReceiver, Receiver, Sender},
     oneshot,
@@ -123,13 +120,25 @@ impl Context {
         Ok(exit_tx)
     }
 
+    // pub async fn broadcast(&mut self, protmsg: ProtMsg) {
+    //     let sec_key_map = self.sec_key_map.clone();
+    //     for (replica, sec_key) in sec_key_map.into_iter() {
+    //         let wrapper_msg = WrapperMsg::new(protmsg.clone(), self.myid, &sec_key.as_slice());
+    //         let cancel_handler: CancelHandler<Acknowledgement> = self.net_send.send(replica, wrapper_msg).await;
+    //         self.add_cancel_handler(cancel_handler);
+    //     }
+    // }
+
     pub async fn broadcast(&mut self, protmsg: ProtMsg) {
+        let mut total_bytes = 0;
         let sec_key_map = self.sec_key_map.clone();
         for (replica, sec_key) in sec_key_map.into_iter() {
             let wrapper_msg = WrapperMsg::new(protmsg.clone(), self.myid, &sec_key.as_slice());
+            total_bytes += Bytes::from(wrapper_msg.to_bytes()).len();
             let cancel_handler: CancelHandler<Acknowledgement> = self.net_send.send(replica, wrapper_msg).await;
             self.add_cancel_handler(cancel_handler);
         }
+        log::info!("Network sending bytes: {:?}", total_bytes);
     }
 
     pub fn add_cancel_handler(&mut self, canc: CancelHandler<Acknowledgement>) {
@@ -137,6 +146,7 @@ impl Context {
     }
 
     pub async fn send(&mut self, replica: Replica, wrapper_msg: WrapperMsg<ProtMsg>) {
+        log::info!("Network sending bytes: {:?}", Bytes::from(wrapper_msg.to_bytes()).len());
         let cancel_handler: CancelHandler<Acknowledgement> =
             self.net_send.send(replica, wrapper_msg).await;
         self.add_cancel_handler(cancel_handler);

@@ -1,7 +1,8 @@
 use std::collections::HashMap;
-
+use bytes::Bytes;
 use ha_crypto::{LargeField, hash::Hash, aes_hash::MerkleTree};
 use lambdaworks_math::polynomial::Polynomial;
+use network::Message;
 use types::WrapperMsg;
 
 use crate::{context::Context, msg::{WSSMsg, WSSMsgSer, ProtMsg}};
@@ -51,6 +52,7 @@ impl Context{
                         self.myid, 
                         sec_key
                     );
+                    log::info!("Network sending bytes: {:?}", Bytes::from(wrapper_msg.to_bytes()).len());
                     let cancel_handler = self.net_send.send(index, wrapper_msg).await;
                     self.add_cancel_handler(cancel_handler);
                 }
