@@ -256,7 +256,11 @@ impl Context{
     pub async fn start_vote_phase(&mut self, instance: usize, leader: Replica){
         log::debug!("Starting Vote Phase for instance {} with leader {}", instance, leader);
         let vaba_context = self.acs_state.vaba_states.get_mut(&instance).unwrap();
-        let pre_value_of_leader = vaba_context.pre_justify_votes.get(&leader).unwrap().0;
+        let pre_value_of_leader = vaba_context.pre_justify_votes.get(&leader);
+        if pre_value_of_leader.is_none(){
+            return;
+        }
+        let pre_value_of_leader = pre_value_of_leader.unwrap().0;
 
         // Broadcast this value
         if !vaba_context.vote_broadcasted{
