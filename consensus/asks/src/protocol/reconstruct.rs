@@ -52,6 +52,7 @@ impl Context{
                         self.myid, 
                         sec_key
                     );
+                    #[cfg(feature = "bandwidth")]
                     log::info!("Network sending bytes: {:?}", Bytes::from(wrapper_msg.to_bytes()).len());
                     let cancel_handler = self.net_send.send(index, wrapper_msg).await;
                     self.add_cancel_handler(cancel_handler);

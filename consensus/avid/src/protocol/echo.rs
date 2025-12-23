@@ -58,6 +58,7 @@ impl Context {
 
                     let sec_key = self.sec_key_map.get(&recipient).unwrap();
                     let wrapper_msg = WrapperMsg::new(ready_msg, self.myid, sec_key);
+                    #[cfg(feature = "bandwidth")]
                     log::info!("Network sending bytes: {:?}", Bytes::from(wrapper_msg.to_bytes()).len());
                     let _cancel_handler = self.net_send.send(recipient, wrapper_msg).await;
                     self.add_cancel_handler(_cancel_handler);
@@ -67,6 +68,7 @@ impl Context {
                         let ready_msg = ProtMsg::Ready(avid_index.proof.root(), avid_index.origin, None, instance_id);
                         let sec_key = self.sec_key_map.get(&party).unwrap();
                         let wrapper_msg = WrapperMsg::new(ready_msg, self.myid, sec_key);
+                        #[cfg(feature = "bandwidth")]
                         log::info!("Network sending bytes: {:?}", Bytes::from(wrapper_msg.to_bytes()).len());
                         let _cancel_handler = self.net_send.send(party, wrapper_msg).await;
                         self.add_cancel_handler(_cancel_handler);

@@ -354,6 +354,7 @@ impl Context{
             let prot_msg = ProtMsg::PubRecL1(instance_id,acss_ske_msg);
             let secret_key = self.sec_key_map.get(&rep).unwrap().clone();
             let wrapper_msg = WrapperMsg::new(prot_msg, self.myid, secret_key.as_slice());
+            #[cfg(feature = "bandwidth")]
             log::info!("Network sending bytes: {:?}", Bytes::from(wrapper_msg.to_bytes()).len());
             let cancel_handler = self.net_send.send(rep, wrapper_msg).await;
             self.add_cancel_handler(cancel_handler);

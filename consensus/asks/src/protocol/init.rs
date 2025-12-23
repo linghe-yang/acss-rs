@@ -87,6 +87,7 @@ impl Context{
 
             let prot_msg_init = ProtMsg::Init( encrypted_share, instance_id);
             let wrapper_msg = WrapperMsg::new(prot_msg_init, self.myid, &secret_key);
+            #[cfg(feature = "bandwidth")]
             log::info!("Network sending bytes: {:?}", Bytes::from(wrapper_msg.to_bytes()).len());
             let cancel_handler = self.net_send.send(rep, wrapper_msg).await;
             self.add_cancel_handler(cancel_handler);
@@ -147,6 +148,7 @@ impl Context{
 
             let echo = ProtMsg::Echo(rbc_msg, deser_msg.reconstruct_to_all, instance_id);
             let wrapper_msg = WrapperMsg::new(echo,self.myid, secret_key_party.as_slice());
+            #[cfg(feature = "bandwidth")]
             log::info!("Network sending bytes: {:?}", Bytes::from(wrapper_msg.to_bytes()).len());
             let cancel_handler: CancelHandler<Acknowledgement> = self.net_send.send(rep, wrapper_msg).await;
             self.add_cancel_handler(cancel_handler);

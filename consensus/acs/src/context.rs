@@ -295,6 +295,7 @@ impl Context {
         Ok((exit_tx, statuses))
     }
 
+    #[cfg(feature = "bandwidth")]
     pub async fn broadcast(&mut self, protmsg: ProtMsg) {
         let mut total_bytes = 0;
         let sec_key_map = self.sec_key_map.clone();
@@ -307,20 +308,22 @@ impl Context {
         log::info!("Network sending bytes: {:?}", total_bytes);
     }
 
-    // pub async fn broadcast(&mut self, protmsg: ProtMsg) {
-    //     let sec_key_map = self.sec_key_map.clone();
-    //     for (replica, sec_key) in sec_key_map.into_iter() {
-    //         let wrapper_msg = WrapperMsg::new(protmsg.clone(), self.myid, &sec_key.as_slice());
-    //         let cancel_handler: CancelHandler<Acknowledgement> = self.net_send.send(replica, wrapper_msg).await;
-    //         self.add_cancel_handler(cancel_handler);
-    //     }
-    // }
+    #[cfg(not(feature = "bandwidth"))]
+    pub async fn broadcast(&mut self, protmsg: ProtMsg) {
+        let sec_key_map = self.sec_key_map.clone();
+        for (replica, sec_key) in sec_key_map.into_iter() {
+            let wrapper_msg = WrapperMsg::new(protmsg.clone(), self.myid, &sec_key.as_slice());
+            let cancel_handler: CancelHandler<Acknowledgement> = self.net_send.send(replica, wrapper_msg).await;
+            self.add_cancel_handler(cancel_handler);
+        }
+    }
 
     pub fn add_cancel_handler(&mut self, canc: CancelHandler<Acknowledgement>) {
         self.cancel_handlers.entry(0).or_default().push(canc);
     }
 
     pub async fn send(&mut self, replica: Replica, wrapper_msg: WrapperMsg<ProtMsg>) {
+        #[cfg(feature = "bandwidth")]
         log::info!("Network sending bytes: {:?}", Bytes::from(wrapper_msg.to_bytes()).len());
         let cancel_handler: CancelHandler<Acknowledgement> =
             self.net_send.send(replica, wrapper_msg).await;

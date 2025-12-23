@@ -72,6 +72,7 @@ impl Context {
             
             let protocol_msg = ProtMsg::Init(avid_msg, instance_id);
             let wrapper_msg = WrapperMsg::new(protocol_msg.clone(), self.myid, &sec_key.as_slice());
+            #[cfg(feature = "bandwidth")]
             log::info!("Network sending bytes: {:?}", Bytes::from(wrapper_msg.to_bytes()).len());
             let cancel_handler: CancelHandler<Acknowledgement> = self.net_send.send(replica, wrapper_msg).await;
             self.add_cancel_handler(cancel_handler);
@@ -108,6 +109,7 @@ impl Context {
             let protocol_msg = ProtMsg::Echo(index_msg, instance_id);
             let sec_key = self.sec_key_map.get(&recipient).unwrap().clone();
             let wrapper_msg = WrapperMsg::new(protocol_msg.clone(), self.myid, &sec_key.as_slice());
+            #[cfg(feature = "bandwidth")]
             log::info!("Network sending bytes: {:?}", Bytes::from(wrapper_msg.to_bytes()).len());
             let cancel_handler: CancelHandler<Acknowledgement> = self.net_send.send(recipient, wrapper_msg).await;
             self.add_cancel_handler(cancel_handler);
