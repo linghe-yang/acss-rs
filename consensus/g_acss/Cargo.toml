@@ -45,7 +45,7 @@ rayon = "=1.10.0"
 rand = "0.6"
 rand_core = "0.6.4"
 
-network = { package = "network", git = "https://github.com/akhilsb/libnet-rs.git" }
+network = { package = "network", git = "https://github.com/linghe-yang/libnet-rs.git" }
 async-trait = "0"
 futures-util = "0"
 reed_solomon_rs = "0.1.2"
