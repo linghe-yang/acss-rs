@@ -490,6 +490,7 @@ impl Context{
                     log::debug!("Consensus output in instance {} is {:?}", instance_id, rbc_outputs);
                     mvba_exec_state.output = Some(rbc_outputs.clone());
                     let _status = self.out_mvba_values.send((instance_id, rbc_outputs)).await;
+                    self.round_state.remove(&instance_id);
                 }
                 else{
                     log::debug!("Did not terminate leader's RBC yet in instance id {}, waiting for it", instance_id);
