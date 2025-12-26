@@ -317,6 +317,7 @@ impl Context{
             self.terminated_rounds.insert(instance_id);
             log::debug!("Terminating BAA round {} for instance {}, broadcasting value {:?}",baa_round,instance_id,term_val);
             let _status = self.out_bin_ba_values.send((instance_id, term_val)).await;
+            self.round_state.remove(&instance_id);
             if _status.is_err(){
                 log::error!("Failed to send BAA value for instance {}",instance_id);
             }
